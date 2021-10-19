@@ -41,6 +41,7 @@ where
         self.max_tokens.save(deps.storage, &msg.max_tokens)?;
         self.white_list.save(deps.storage, &white_list)?;
         self.admin.save(deps.storage, &admin)?;
+        self.is_presale.save(deps.storage, &true)?;
         //let minter = deps.api.addr_validate(&msg.minter)?;
         //self.minter.save(deps.storage, &minter)?;
         Ok(Response::default())
@@ -78,7 +79,10 @@ where
             } => self.send_nft(deps, env, info, contract, token_id, msg),
             ExecuteMsg::UpdateWhiteList {
                 addresses
-            } => self.execute_update_white_list(deps, env, info, addresses)
+            } => self.execute_update_white_list(deps, env, info, addresses),
+            ExecuteMsg::SetPresaleStatus(is_presale) => {
+                self.set_presale_status(deps, env, info, is_presale)
+            }
         }
     }
 }
@@ -104,7 +108,8 @@ where
 
         let minter = &info.sender;
 
-        if msg.is_private_sale {
+        let is_presale = self.is_presale.load(deps.storage)?;
+        if is_presale  {
             let white_list = self.white_list.load(deps.storage)?;
             let is_white_listed = white_list.is_white_listed(minter.as_ref());
             if !is_white_listed {
@@ -156,6 +161,27 @@ where
             self.white_list.save(deps.storage, &cfg)?;
 
             let res = Response::new().add_attribute("action", "update_white_list");
+            Ok(res)
+        }
+    }
+
+    pub fn set_presale_status(
+        &self,
+        deps: DepsMut,
+        _env: Env,
+        info: MessageInfo,
+        is_presale: bool,
+    ) -> Result<Response<C>, ContractError> {
+        let admin = self.admin.load(deps.storage)?;
+        
+        if admin != info.sender {
+            Err(ContractError::Unauthorized {})
+        } else {
+            self.is_presale.save(deps.storage, &is_presale)?;
+
+            let res = Response::new()
+                .add_attribute("action", "set_presale_status")
+                .add_attribute("presale_status", is_presale.to_string());
             Ok(res)
         }
     }

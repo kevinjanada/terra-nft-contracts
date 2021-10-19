@@ -59,7 +59,11 @@ pub enum ExecuteMsg<T> {
     /// Mint a new NFT, can only be called by the contract minter
     Mint(MintMsg<T>),
 
+    /// Update whitelist addresses
     UpdateWhiteList { addresses: Vec<String> },
+
+    /// Set is_presale
+    SetPresaleStatus(bool),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -70,8 +74,6 @@ pub struct MintMsg<T> {
     /// The owner of the newly minter NFT
     pub owner: String,
     */
-    /// is minting via private sale or public sale
-    pub is_private_sale: bool,
     /// Universal resource identifier for this NFT
     /// Should point to a JSON file that conforms to the ERC721
     /// Metadata JSON Schema
@@ -136,8 +138,17 @@ pub enum QueryMsg {
         limit: Option<u32>,
     },
 
-    // Return the minter
+    /// Return the minter
     Minter {},
+
+    /// Return the whitelist
+    WhiteList {},
+
+    /// Return presale status
+    PresaleStatus {},
+
+    /// Return the contract admin
+    ContractAdmin {},
 }
 
 /// Shows who can mint these tokens

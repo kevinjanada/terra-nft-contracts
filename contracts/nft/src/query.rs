@@ -196,6 +196,18 @@ where
             } => to_binary(&self.tokens(deps, owner, start_after, limit)?),
             QueryMsg::AllTokens { start_after, limit } => {
                 to_binary(&self.all_tokens(deps, start_after, limit)?)
+            },
+            QueryMsg::WhiteList {} => {
+                let white_list = self.white_list.load(deps.storage)?;
+                to_binary(&white_list.addresses)
+            },
+            QueryMsg::PresaleStatus {} => {
+                let is_presale = self.is_presale.load(deps.storage)?;
+                to_binary(&is_presale)
+            },
+            QueryMsg::ContractAdmin {} => {
+                let admin = self.admin.load(deps.storage)?;
+                to_binary(&admin)
             }
         }
     }

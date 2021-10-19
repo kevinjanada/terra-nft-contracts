@@ -25,6 +25,8 @@ where
     pub white_list: Item<'a, WhiteList>,
     /// Admin. The address that instantiated the contract
     pub admin: Item<'a, Addr>,
+    /// Is Presale 
+    pub is_presale: Item<'a, bool>,
 
     pub(crate) _custom_response: PhantomData<C>,
 }
@@ -49,6 +51,7 @@ where
             "max_tokens",
             "white_list",
             "admin",
+            "is_presale",
             "operators",
             "tokens",
             "tokens__owner",
@@ -67,6 +70,7 @@ where
         max_token_key: &'a str,
         white_list_key: &'a str,
         admin_key: &'a str,
+        is_presale_key: &'a str,
         operator_key: &'a str,
         tokens_key: &'a str,
         tokens_owner_key: &'a str,
@@ -83,6 +87,7 @@ where
             max_tokens: Item::new(max_token_key),
             white_list: Item::new(white_list_key),
             admin: Item::new(admin_key),
+            is_presale: Item::new(is_presale_key),
             _custom_response: PhantomData,
         }
     }
