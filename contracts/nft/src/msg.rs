@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::Binary;
+use cosmwasm_std::{Binary, Uint128};
 use cw721::Expiration;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -64,6 +64,9 @@ pub enum ExecuteMsg<T> {
 
     /// Set is_presale
     SetPresaleStatus(bool),
+
+    /// Withdraw uluna balance from contract
+    WithdrawBalance(Uint128),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

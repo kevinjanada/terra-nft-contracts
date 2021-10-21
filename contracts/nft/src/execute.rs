@@ -1,7 +1,11 @@
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
-use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Api, Addr};
+use cosmwasm_std::{
+    Binary, Deps, DepsMut, Env, MessageInfo,
+    Response, StdResult, Api, Addr, Uint128,
+    BankMsg, coins,
+};
 
 use cw2::set_contract_version;
 use cw721::{ContractInfoResponse, CustomMsg, Cw721Execute, Cw721ReceiveMsg, Expiration};
@@ -82,6 +86,9 @@ where
             } => self.execute_update_white_list(deps, env, info, addresses),
             ExecuteMsg::SetPresaleStatus(is_presale) => {
                 self.set_presale_status(deps, env, info, is_presale)
+            },
+            ExecuteMsg::WithdrawBalance(amount) => {
+                self.withdraw_balance(deps, env, info, amount)
             }
         }
     }
@@ -96,7 +103,7 @@ where
     pub fn mint(
         &self,
         deps: DepsMut,
-        _env: Env,
+        env: Env,
         info: MessageInfo,
         msg: MintMsg<T>,
     ) -> Result<Response<C>, ContractError> {
@@ -138,10 +145,31 @@ where
 
         self.increment_tokens(deps.storage)?;
 
+        if info.funds.len() == 0 {
+            return Err(ContractError::InsufficientPayment {});
+        }
+        let coin = &info.funds[0];
+        let minting_fee = Uint128::from(1000u128);
+        if coin.amount < minting_fee {
+            return Err(ContractError::InsufficientPayment {});
+        } 
+
+        // Querier guarantees to returns up-to-date data, including funds sent in this handle message
+        // https://github.com/CosmWasm/wasmd/blob/master/x/wasm/internal/keeper/keeper.go#L185-L192
+        let contract_addr = &env.contract.address;
+        let balance = deps.querier.query_all_balances(contract_addr)?;
+        println!("token amount is {:?}", balance);
+
+        let mut contract_balance = "".to_string();
+        if balance.len() > 0 {
+            contract_balance = balance[0].amount.to_string();
+        }
+
         Ok(Response::new()
             .add_attribute("action", "mint")
             .add_attribute("minter", minter)
-            .add_attribute("token_id", msg.token_id))
+            .add_attribute("token_id", msg.token_id)
+            .add_attribute("contract_balance", contract_balance))
     }
 
     pub fn execute_update_white_list(
@@ -184,6 +212,37 @@ where
                 .add_attribute("presale_status", is_presale.to_string());
             Ok(res)
         }
+    }
+
+    pub fn withdraw_balance(
+        &self,
+        deps: DepsMut,
+        env: Env,
+        _info: MessageInfo,
+        withdraw_amount: Uint128,
+    ) -> Result<Response<C>, ContractError> {
+
+        let contract_addr = &env.contract.address;
+        let balance = deps.querier.query_all_balances(contract_addr)?;
+
+        if balance.len() == 0 {
+            return Err(ContractError::InsufficientBalance {});
+        }
+
+        let available_amount = balance[0].amount;
+        if withdraw_amount > available_amount {
+            return Err(ContractError::InsufficientBalance {});
+        }
+
+        let admin_address = self.admin.load(deps.storage)?;
+ 
+        let r = Response::new()
+            .add_message(BankMsg::Send {
+                to_address: admin_address.to_string(),
+                amount: coins(withdraw_amount.into(), "uluna"),
+            });
+
+        Ok(r)
     }
 }
 

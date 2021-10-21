@@ -17,5 +17,11 @@ pub enum ContractError {
 
     #[error("Maximum number of tokens reached")]
     MaxTokensReached {},
+
+    #[error("Insufficient Payment")]
+    InsufficientPayment {},
+
+    #[error("Insufficient Balance")]
+    InsufficientBalance {},
 }
 
