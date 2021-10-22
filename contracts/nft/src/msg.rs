@@ -14,6 +14,8 @@ pub struct InstantiateMsg {
     pub max_tokens: u64,
     /// Whitelisted addresses for presale
     pub white_list: Vec<String>,
+    /// Minting Fee (in uluna)
+    pub minting_fee: Uint128,
 
     /*
     /// The minter is the only one who can create new NFTs.
@@ -152,6 +154,12 @@ pub enum QueryMsg {
 
     /// Return the contract admin
     ContractAdmin {},
+
+    /// Return the number of maximum tokens
+    MaxTokens {},
+
+    /// Return the minting fee
+    MintingFee {},
 }
 
 /// Shows who can mint these tokens

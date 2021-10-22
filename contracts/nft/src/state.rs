@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
-use cosmwasm_std::{Addr, BlockInfo, StdResult, Storage};
+use cosmwasm_std::{Addr, BlockInfo, StdResult, Storage, Uint128};
 
 use cw721::{ContractInfoResponse, CustomMsg, Cw721, Expiration};
 use cw_storage_plus::{Index, IndexList, IndexedMap, Item, Map, MultiIndex};
@@ -27,6 +27,8 @@ where
     pub admin: Item<'a, Addr>,
     /// Is Presale 
     pub is_presale: Item<'a, bool>,
+    /// Minting Fee
+    pub minting_fee: Item<'a, Uint128>,
 
     pub(crate) _custom_response: PhantomData<C>,
 }
@@ -52,6 +54,7 @@ where
             "white_list",
             "admin",
             "is_presale",
+            "minting_fee",
             "operators",
             "tokens",
             "tokens__owner",
@@ -71,6 +74,7 @@ where
         white_list_key: &'a str,
         admin_key: &'a str,
         is_presale_key: &'a str,
+        minting_fee_key: &'a str,
         operator_key: &'a str,
         tokens_key: &'a str,
         tokens_owner_key: &'a str,
@@ -88,6 +92,7 @@ where
             white_list: Item::new(white_list_key),
             admin: Item::new(admin_key),
             is_presale: Item::new(is_presale_key),
+            minting_fee: Item::new(minting_fee_key),
             _custom_response: PhantomData,
         }
     }

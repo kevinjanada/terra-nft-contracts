@@ -46,6 +46,7 @@ where
         self.white_list.save(deps.storage, &white_list)?;
         self.admin.save(deps.storage, &admin)?;
         self.is_presale.save(deps.storage, &true)?;
+        self.minting_fee.save(deps.storage, &msg.minting_fee)?;
         //let minter = deps.api.addr_validate(&msg.minter)?;
         //self.minter.save(deps.storage, &minter)?;
         Ok(Response::default())
@@ -125,7 +126,7 @@ where
         }
 
         // Check if maximum token number reached
-        if self.token_count.load(deps.storage) == self.max_tokens.load(deps.storage) {
+        if self.token_count.load(deps.storage)? == self.max_tokens.load(deps.storage)? {
             return Err(ContractError::MaxTokensReached {});
         }
 
@@ -149,7 +150,7 @@ where
             return Err(ContractError::InsufficientPayment {});
         }
         let coin = &info.funds[0];
-        let minting_fee = Uint128::from(1000u128);
+        let minting_fee = self.minting_fee.load(deps.storage)?;
         if coin.amount < minting_fee {
             return Err(ContractError::InsufficientPayment {});
         } 

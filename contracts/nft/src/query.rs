@@ -208,6 +208,14 @@ where
             QueryMsg::ContractAdmin {} => {
                 let admin = self.admin.load(deps.storage)?;
                 to_binary(&admin)
+            },
+            QueryMsg::MaxTokens {} => {
+                let max_tokens = self.max_tokens.load(deps.storage)?;
+                to_binary(&max_tokens)
+            },
+            QueryMsg::MintingFee {} => {
+                let minting_fee = self.minting_fee.load(deps.storage)?;
+                to_binary(&minting_fee)
             }
         }
     }
